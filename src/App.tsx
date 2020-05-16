@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   atom,
   selector,
@@ -9,72 +9,189 @@ import {
 } from "recoil";
 import "./styles.css";
 
-const counterState = atom({
-  key: "counterState",
-  default: 0
+const todoListFilterState = atom({
+  key: "todoListFilterState",
+  default: "Show All"
 });
 
-const roughCounterState = selector({
-  key: "roughCounterState",
-  get: ({ get }) => Math.floor(get(counterState) / 10),
-  set: ({ set }, newValue) => {
-    set(counterState, newValue * 10);
+const todoListState = atom({
+  key: "todoListState",
+  default: []
+});
+
+const filteredTodoListState = selector({
+  key: "filteredTodoListState",
+  get: ({ get }) => {
+    const filter = get(todoListFilterState);
+    const list = get(todoListState);
+
+    switch (filter) {
+      case "Show Completed":
+        return list.filter(item => item.isComplete);
+      case "Show Uncompleted":
+        return list.filter(item => !item.isComplete);
+      default:
+        return list;
+    }
   }
 });
 
-export default function App() {
-  const counter = useRecoilValue(counterState);
+const todoListStatsState = selector({
+  key: "todoListStatsState",
+  get: ({ get }) => {
+    const todoList = get(filteredTodoListState);
+    const totalNum = todoList.length;
+    const totalCompletedNum = todoList.filter(item => item.isComplete).length;
+    const totalUncompletedNum = totalNum - totalCompletedNum;
+    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum;
+
+    return {
+      totalNum,
+      totalCompletedNum,
+      totalUncompletedNum,
+      percentCompleted
+    };
+  }
+});
+
+function TodoList() {
+  // changed from todoListState to filteredTodoListState
+  const todoList = useRecoilValue(filteredTodoListState);
+
   return (
-    <div className="App">
-      <h1>Hello CodeSandbox {counter}</h1>
-      <h2>Start editing to see some magic happen!</h2>
-      <CounterButton />
-      <CounterButton />
-      <CounterButton />
-      <UpdateOnlyButton />
-      <AlertButton />
-      <RoughButton />
+    <>
+      <TodoListStats />
+      <TodoListFilters />
+      <TodoItemCreator />
+
+      {todoList.map(todoItem => (
+        <TodoItem item={todoItem} key={todoItem.id} />
+      ))}
+    </>
+  );
+}
+
+function TodoListFilters() {
+  const [filter, setFilter] = useRecoilState(todoListFilterState);
+
+  const updateFilter = ({ target: { value } }) => {
+    setFilter(value);
+  };
+
+  return (
+    <>
+      Filter:
+      <select value={filter} onChange={updateFilter}>
+        <option value="Show All">All</option>
+        <option value="Show Completed">Completed</option>
+        <option value="Show Uncompleted">Uncompleted</option>
+      </select>
+    </>
+  );
+}
+
+function TodoListStats() {
+  const {
+    totalNum,
+    totalCompletedNum,
+    totalUncompletedNum,
+    percentCompleted
+  } = useRecoilValue(todoListStatsState);
+
+  const formattedPercentCompleted = Math.round(percentCompleted * 100);
+
+  return (
+    <ul>
+      <li>Total items: {totalNum}</li>
+      <li>Items completed: {totalCompletedNum}</li>
+      <li>Items not completed: {totalUncompletedNum}</li>
+      <li>Percent completed: {formattedPercentCompleted}</li>
+    </ul>
+  );
+}
+
+export const App = () => {
+  return <TodoList />;
+};
+
+export const TodoItem = ({ item }) => {
+  const [todoList, setTodoList] = useRecoilState(todoListState);
+  const index = todoList.findIndex(listItem => listItem === item);
+
+  const editItemText = ({ target: { value } }) => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      text: value
+    });
+
+    setTodoList(newList);
+  };
+
+  const toggleItemCompletion = () => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      isComplete: !item.isComplete
+    });
+
+    setTodoList(newList);
+  };
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
+
+    setTodoList(newList);
+  };
+
+  return (
+    <div>
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
+      <button onClick={deleteItem}>X</button>
+    </div>
+  );
+};
+
+function replaceItemAtIndex(arr, index, newValue) {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+}
+
+function removeItemAtIndex(arr, index) {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+}
+
+function TodoItemCreator() {
+  const [inputValue, setInputValue] = useState("");
+  const setTodoList = useSetRecoilState(todoListState);
+
+  const addItem = () => {
+    setTodoList(oldTodoList => [
+      ...oldTodoList,
+      {
+        id: getId(),
+        text: inputValue,
+        isComplete: false
+      }
+    ]);
+  };
+
+  const onChange = ({ target: { value } }) => {
+    setInputValue(value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
+      <button onClick={addItem}>Add</button>
     </div>
   );
 }
 
-const CounterButton = () => {
-  const [count, setCount] = useRecoilState(counterState);
-  return (
-    <p>
-      <button onClick={() => setCount(c => c + 1)}>{count}</button>
-    </p>
-  );
-};
-
-const UpdateOnlyButton = () => {
-  const setCount = useSetRecoilState(counterState);
-  return (
-    <p>
-      <button onClick={() => setCount(c => c + 1)}>incr</button>
-    </p>
-  );
-};
-
-const AlertButton = () => {
-  const showAlert = useRecoilCallback(async ({ getPromise }) => {
-    const counter = await getPromise(counterState);
-
-    alert(counter);
-  }, []);
-
-  return (
-    <p>
-      <button onClick={showAlert}>Show counter value</button>
-    </p>
-  );
-};
-
-const RoughButton = () => {
-  const [roughValue, setRoughValue] = useRecoilState(roughCounterState);
-  return (
-    <p>
-      <button onClick={() => setRoughValue(c => c + 1)}>{roughValue}</button>
-    </p>
-  );
-};
+// utility for creating unique Id
+let id = 0;
+function getId() {
+  return id++;
+}
