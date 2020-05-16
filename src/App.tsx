@@ -4,8 +4,7 @@ import {
   selector,
   useRecoilState,
   useRecoilValue,
-  useSetRecoilState,
-  useRecoilCallback
+  useSetRecoilState
 } from "recoil";
 import "./styles.css";
 
@@ -54,7 +53,7 @@ const todoListStatsState = selector({
   }
 });
 
-function TodoList() {
+const TodoList = () => {
   // changed from todoListState to filteredTodoListState
   const todoList = useRecoilValue(filteredTodoListState);
 
@@ -69,9 +68,9 @@ function TodoList() {
       ))}
     </>
   );
-}
+};
 
-function TodoListFilters() {
+const TodoListFilters = () => {
   const [filter, setFilter] = useRecoilState(todoListFilterState);
 
   const updateFilter = ({ target: { value } }) => {
@@ -88,9 +87,9 @@ function TodoListFilters() {
       </select>
     </>
   );
-}
+};
 
-function TodoListStats() {
+const TodoListStats = () => {
   const {
     totalNum,
     totalCompletedNum,
@@ -108,10 +107,6 @@ function TodoListStats() {
       <li>Percent completed: {formattedPercentCompleted}</li>
     </ul>
   );
-}
-
-export const App = () => {
-  return <TodoList />;
 };
 
 export const TodoItem = ({ item }) => {
@@ -155,15 +150,15 @@ export const TodoItem = ({ item }) => {
   );
 };
 
-function replaceItemAtIndex(arr, index, newValue) {
+const replaceItemAtIndex = (arr, index, newValue) => {
   return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
-}
+};
 
-function removeItemAtIndex(arr, index) {
+const removeItemAtIndex = (arr, index) => {
   return [...arr.slice(0, index), ...arr.slice(index + 1)];
-}
+};
 
-function TodoItemCreator() {
+const TodoItemCreator = () => {
   const [inputValue, setInputValue] = useState("");
   const setTodoList = useSetRecoilState(todoListState);
 
@@ -188,10 +183,14 @@ function TodoItemCreator() {
       <button onClick={addItem}>Add</button>
     </div>
   );
-}
+};
 
 // utility for creating unique Id
 let id = 0;
 function getId() {
   return id++;
 }
+
+export const App = () => {
+  return <TodoList />;
+};
