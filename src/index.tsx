@@ -1,7 +1,17 @@
-import * as React from "react";
-import { render } from "react-dom";
+import React, { Suspense } from "react";
+import ReactDOM from "react-dom";
+import { RecoilRoot } from "recoil";
 
 import App from "./App";
 
 const rootElement = document.getElementById("root");
-render(<App />, rootElement);
+ReactDOM.render(
+  <React.StrictMode>
+    <Suspense fallback={<p>Sus.</p>}>
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>
+    </Suspense>
+  </React.StrictMode>,
+  rootElement
+);
