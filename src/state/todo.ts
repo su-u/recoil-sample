@@ -1,19 +1,23 @@
-import {
-  atom,
-  selector,
-  useRecoilState,
-  useRecoilValue,
-  useSetRecoilState
-} from "recoil";
+import { atom, selector } from "recoil";
+
+export interface Task {
+  id: number;
+  text: string;
+  isComplete: boolean;
+}
+
+interface Filters {}
+
+const initTodoListState: Task[] = [];
+
+export const todoListState = atom({
+  key: "todoListState",
+  default: initTodoListState
+});
 
 export const todoListFilterState = atom({
   key: "todoListFilterState",
   default: "Show All"
-});
-
-export const todoListState = atom({
-  key: "todoListState",
-  default: []
 });
 
 export const filteredTodoListState = selector({
