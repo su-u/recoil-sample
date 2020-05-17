@@ -7,6 +7,7 @@ import {
   todoListStatsState
 } from "../state/todo";
 import { TodoItem } from "./TodoItem";
+import { Task } from "../state/todo";
 
 const TodoListFilters = () => {
   const [filter, setFilter] = useRecoilState(todoListFilterState);
@@ -52,7 +53,7 @@ const TodoItemCreator = () => {
   const setTodoList = useSetRecoilState(todoListState);
 
   const addItem = () => {
-    setTodoList(oldTodoList => [
+    setTodoList((oldTodoList: Task[]) => [
       ...oldTodoList,
       {
         id: getId(),
@@ -90,7 +91,7 @@ export const TodoList = () => {
       <TodoListFilters />
       <TodoItemCreator />
 
-      {todoList.map(todoItem => (
+      {todoList.map((todoItem: Task) => (
         <TodoItem item={todoItem} key={todoItem.id} />
       ))}
     </>

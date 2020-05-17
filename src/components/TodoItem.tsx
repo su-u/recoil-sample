@@ -12,7 +12,7 @@ const removeItemAtIndex = (arr: Task[], index: number) => {
 
 export const TodoItem: React.FC<{ item: Task }> = ({ item }) => {
   const [todoList, setTodoList] = useRecoilState(todoListState);
-  const index = todoList.findIndex(listItem => listItem === item);
+  const index = todoList.findIndex((listItem: Task) => listItem === item);
 
   const editItemText = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newList = replaceItemAtIndex(todoList, index, {
