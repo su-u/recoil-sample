@@ -11,8 +11,8 @@ import { TodoItem } from "./TodoItem";
 const TodoListFilters = () => {
   const [filter, setFilter] = useRecoilState(todoListFilterState);
 
-  const updateFilter = ({ target: { value } }) => {
-    setFilter(value);
+  const updateFilter = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilter(event.target.value);
   };
 
   return (
@@ -62,8 +62,8 @@ const TodoItemCreator = () => {
     ]);
   };
 
-  const onChange = ({ target: { value } }) => {
-    setInputValue(value);
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
   };
 
   return (

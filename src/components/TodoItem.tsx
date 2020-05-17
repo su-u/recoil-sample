@@ -14,10 +14,10 @@ export const TodoItem: React.FC<{ item: Task }> = ({ item }) => {
   const [todoList, setTodoList] = useRecoilState(todoListState);
   const index = todoList.findIndex(listItem => listItem === item);
 
-  const editItemText = ({ target: { value } }) => {
+  const editItemText = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newList = replaceItemAtIndex(todoList, index, {
       ...item,
-      text: value
+      text: event.target.value
     });
 
     setTodoList(newList);
